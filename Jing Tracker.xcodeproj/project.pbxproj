@@ -6,8 +6,15 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BCC550E82EE7F836009E2B61 /* README in Resources */ = {isa = PBXBuildFile; fileRef = BCC550E72EE7F82B009E2B61 /* README */; };
+		BCC550EA2EE7F89E009E2B61 /* LICENSE in Sources */ = {isa = PBXBuildFile; fileRef = BCC550E92EE7F895009E2B61 /* LICENSE */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		BCC550C82EE7EF64009E2B61 /* Jing Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Jing Tracker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		BCC550E72EE7F82B009E2B61 /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		BCC550E92EE7F895009E2B61 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LICENSE; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +39,8 @@
 		BCC550BF2EE7EF64009E2B61 = {
 			isa = PBXGroup;
 			children = (
+				BCC550E92EE7F895009E2B61 /* LICENSE */,
+				BCC550E72EE7F82B009E2B61 /* README */,
 				BCC550CA2EE7EF64009E2B61 /* Jing Tracker */,
 				BCC550C92EE7EF64009E2B61 /* Products */,
 			);
@@ -109,6 +118,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BCC550E82EE7F836009E2B61 /* README in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,6 +129,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BCC550EA2EE7F89E009E2B61 /* LICENSE in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
