@@ -1,10 +1,3 @@
-//
-//  Item.swift
-//  Jing Tracker
-//
-//  Created by user287035 on 12/8/25.
-//
-
 import Foundation
 import SwiftData
 

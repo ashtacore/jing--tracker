@@ -1,10 +1,3 @@
-//
-//  Jing_TrackerApp.swift
-//  Jing Tracker
-//
-//  Created by user287035 on 12/8/25.
-//
-
 import SwiftUI
 import SwiftData
 
@@ -12,7 +5,7 @@ import SwiftData
 struct Jing_TrackerApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            WellnessEvent.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
