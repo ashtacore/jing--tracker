@@ -16,6 +16,8 @@ struct StatisticsView: View {
     }
     
     @State private var selectedPeriod: TimePeriod = .week
+    @State private var selectedCalendarDate: Date? = nil
+    @State private var showingDayDetail: Bool = false
     
     // Filtered and sorted dates within the selected range
     var masturbationDates: [Date] {
@@ -80,6 +82,39 @@ struct StatisticsView: View {
         }
     }
     
+    // Calendar helper computed properties
+    var allMonthsInRange: [Date] {
+        let calendar = Calendar.current
+        var months: [Date] = []
+        var current = calendar.date(from: calendar.dateComponents([.year, .month], from: startDate))!
+        let endMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: endDate))!
+        
+        while current <= endMonth {
+            months.append(current)
+            current = calendar.date(byAdding: .month, value: 1, to: current)!
+        }
+        return months
+    }
+    
+    func eventsForDay(_ date: Date) -> (masturbation: Int, sex: Int) {
+        let calendar = Calendar.current
+        let masturbationCount = masturbationDates.filter { calendar.isDate($0, inSameDayAs: date) }.count
+        let sexCount = sexDates.filter { calendar.isDate($0, inSameDayAs: date) }.count
+        return (masturbationCount, sexCount)
+    }
+    
+    func colorForDay(_ date: Date) -> Color? {
+        let events = eventsForDay(date)
+        if events.masturbation > 0 && events.sex > 0 {
+            return .purple
+        } else if events.masturbation > 0 {
+            return .blue
+        } else if events.sex > 0 {
+            return .red
+        }
+        return nil
+    }
+    
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -92,6 +127,9 @@ struct StatisticsView: View {
                     
                     // Trend Chart Section
                     trendChartSection
+                    
+                    // Calendar Section
+                    calendarSection
                 }
                 .padding(.vertical)
             }
@@ -102,6 +140,11 @@ struct StatisticsView: View {
             .onChange(of: events) { _, _ in
                 if !hasInitialized {
                     initializeDates()
+                }
+            }
+            .sheet(isPresented: $showingDayDetail) {
+                if let selectedDate = selectedCalendarDate {
+                    dayDetailSheet(for: selectedDate)
                 }
             }
         }
@@ -316,5 +359,186 @@ struct StatisticsView: View {
         }
         endDate = Date()
         hasInitialized = true
+    }
+    
+    // MARK: - Calendar Section
+    private var calendarSection: some View {
+        VStack(spacing: 16) {
+            Text("Calendar")
+                .font(.headline)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
+            
+            // Legend
+            HStack(spacing: 20) {
+                legendItem(color: .blue, label: "Masturbation")
+                legendItem(color: .red, label: "Sex")
+                legendItem(color: .purple, label: "Both")
+            }
+            .font(.caption)
+            .padding(.horizontal)
+            
+            ScrollView {
+                LazyVStack(spacing: 24) {
+                    ForEach(allMonthsInRange, id: \.self) { month in
+                        monthView(for: month)
+                    }
+                }
+                .padding(.horizontal)
+            }
+            .frame(height: 400)
+            .background(Color(uiColor: .secondarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal)
+        }
+    }
+    
+    private func legendItem(color: Color, label: String) -> some View {
+        HStack(spacing: 4) {
+            Circle()
+                .fill(color)
+                .frame(width: 10, height: 10)
+            Text(label)
+                .foregroundStyle(.secondary)
+        }
+    }
+    
+    private func monthView(for month: Date) -> some View {
+        let calendar = Calendar.current
+        let monthFormatter: DateFormatter = {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "MMMM yyyy"
+            return formatter
+        }()
+        
+        let daysInMonth = calendar.range(of: .day, in: .month, for: month)!.count
+        let firstWeekday = calendar.component(.weekday, from: month)
+        let offsetDays = firstWeekday - calendar.firstWeekday
+        let adjustedOffset = offsetDays < 0 ? offsetDays + 7 : offsetDays
+        
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(monthFormatter.string(from: month))
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            // Weekday headers
+            HStack(spacing: 0) {
+                ForEach(calendar.shortWeekdaySymbols, id: \.self) { day in
+                    Text(day.prefix(2))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            
+            // Days grid
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7), spacing: 2) {
+                // Empty cells for offset
+                ForEach(0..<adjustedOffset, id: \.self) { _ in
+                    Color.clear
+                        .frame(height: 32)
+                }
+                
+                // Day cells
+                ForEach(1...daysInMonth, id: \.self) { day in
+                    let date = calendar.date(from: DateComponents(
+                        year: calendar.component(.year, from: month),
+                        month: calendar.component(.month, from: month),
+                        day: day
+                    ))!
+                    
+                    dayCell(for: date, day: day)
+                }
+            }
+        }
+        .padding()
+        .background(Color(uiColor: .tertiarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+    
+    private func dayCell(for date: Date, day: Int) -> some View {
+        let isInRange = date >= startDate && date <= endDate
+        let dayColor = isInRange ? colorForDay(date) : nil
+        let hasEvents = dayColor != nil
+        
+        return Button {
+            if isInRange {
+                selectedCalendarDate = date
+                showingDayDetail = true
+            }
+        } label: {
+            ZStack {
+                if let color = dayColor {
+                    Circle()
+                        .fill(color.opacity(0.8))
+                }
+                
+                Text("\(day)")
+                    .font(.caption)
+                    .fontWeight(hasEvents ? .semibold : .regular)
+                    .foregroundStyle(hasEvents ? .white : (isInRange ? .primary : .tertiary))
+            }
+            .frame(height: 32)
+        }
+        .buttonStyle(.plain)
+        .disabled(!isInRange)
+    }
+    
+    private func dayDetailSheet(for date: Date) -> some View {
+        let events = eventsForDay(date)
+        let dateFormatter: DateFormatter = {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .full
+            return formatter
+        }()
+        
+        return NavigationStack {
+            VStack(spacing: 24) {
+                VStack(spacing: 16) {
+                    HStack {
+                        Image(systemName: "hand.raised.fill")
+                            .foregroundStyle(.blue)
+                            .font(.title2)
+                        Text("Masturbation")
+                            .font(.headline)
+                        Spacer()
+                        Text("\(events.masturbation)")
+                            .font(.title)
+                            .fontWeight(.bold)
+                    }
+                    .padding()
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    
+                    HStack {
+                        Image(systemName: "heart.fill")
+                            .foregroundStyle(.red)
+                            .font(.title2)
+                        Text("Sex")
+                            .font(.headline)
+                        Spacer()
+                        Text("\(events.sex)")
+                            .font(.title)
+                            .fontWeight(.bold)
+                    }
+                    .padding()
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .padding()
+                
+                Spacer()
+            }
+            .navigationTitle(dateFormatter.string(from: date))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        showingDayDetail = false
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 }
