@@ -1,10 +1,15 @@
 import SwiftUI
+import SwiftData
 
 struct LogView: View {
     @Environment(\.modelContext) private var modelContext
+    
+    static var thirtyDaysAgo: Date {
+            Calendar.current.date(byAdding: .day, value: -30, to: Date())!
+        }
     @Query(filter: #Predicate<WellnessEvent> { event in
         event.date >= thirtyDaysAgo
-    }, sort: \WellnessEvent.date, order: .reverse) private var events: [WellnessEvent]
+    }, sort: \WellnessEvent.date, order: .reverse) private var recentEvents: [WellnessEvent]
     
     // Date Picker control variables
     @State private var showingDatePicker = false
@@ -31,11 +36,11 @@ struct LogView: View {
     }
 
     var masturbationDates: [Date] {
-        events.filter { $0.type == .masturbation }.map { $0.date }
+        recentEvents.filter { $0.type == .masturbation }.map { $0.date }
     }
     
     var sexDates: [Date] {
-        events.filter { $0.type == .sex }.map { $0.date }
+        recentEvents.filter { $0.type == .sex }.map { $0.date }
     }
     
     var hasMasturbatedRecently: Bool {
@@ -60,7 +65,7 @@ struct LogView: View {
         // Only fetch if no recent masturbation
         if !recentEvents.contains(where: { $0.type == .masturbation }) {
             let descriptor = FetchDescriptor<WellnessEvent>(
-                predicate: #Predicate { $0.typeRawValue == "masturbation" },
+                predicate: #Predicate { $0.type == EventType.masturbation },
                 sortBy: [SortDescriptor(\.date, order: .reverse)]
             )
             if let result = try? modelContext.fetch(descriptor).first {
@@ -71,7 +76,7 @@ struct LogView: View {
         // Only fetch if no recent sex
         if !recentEvents.contains(where: { $0.type == .sex }) {
             let descriptor = FetchDescriptor<WellnessEvent>(
-                predicate: #Predicate { $0.typeRawValue == "sex" },
+                predicate: #Predicate { $0.type == EventType.sex },
                 sortBy: [SortDescriptor(\.date, order: .reverse)]
             )
             if let result = try? modelContext.fetch(descriptor).first {
@@ -88,12 +93,12 @@ struct LogView: View {
                         EventButton(
                             title: "Masturbated Today",
                             icon: "hand.raised.fill",
-                            isLogged: hasMasturbatedToday,
+                            isLogged: hasMasturbatedRecently,
                             action: {
-                                logEvent(.masturbation, Date())
+                                logEvent(type: .masturbation)
                             }
                         )
-                        .sensoryFeedback(.success, trigger: lastMasturbationDate)
+                        .sensoryFeedback(.success, trigger: daysSinceMasturbation)
                         
                         Button {
                             selectedEventType = .masturbation
@@ -114,10 +119,10 @@ struct LogView: View {
                             icon: "heart.fill",
                             isLogged: hadSexRecently,
                             action: {
-                                logEvent(.sex, Date())
+                                logEvent(type: .sex)
                             }
                         )
-                        .sensoryFeedback(.success, trigger: lastSexDate)
+                        .sensoryFeedback(.success, trigger: daysSinceSex)
                         
                         Button {
                             selectedEventType = .sex
@@ -193,7 +198,7 @@ struct LogView: View {
                     eventType: selectedEventType,
                     onConfirm: { date in
                         if let eventType = selectedEventType {
-                            onLogEvent(eventType, date)
+                            logEvent(type: eventType, date: date)
                         }
                         showingDatePicker = false
                     },

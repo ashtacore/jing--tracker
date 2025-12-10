@@ -5,7 +5,7 @@ import Foundation
 func averageEventsPerWeek(sortedDates: [Date], endDate: Date) -> Double? {
     guard !sortedDates.isEmpty else { return nil }
     
-    let firstDate = sortedDates.first
+    let firstDate = sortedDates[0]
     
     // Ensure endDate is after firstDate
     guard endDate > firstDate else { return nil }
