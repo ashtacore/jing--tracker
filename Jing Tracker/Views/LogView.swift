@@ -112,9 +112,6 @@ struct LogView: View {
                         }
                     }
                     
-                    Divider()
-                        .padding(.horizontal)
-                    
                     VStack(spacing: 20) {
                         EventButton(
                             title: "Had Sex Today",
@@ -135,6 +132,10 @@ struct LogView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                    .padding(.top, 15)
+
+                    Divider()
+                        .padding(.horizontal)
                     
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Last 30 Days")
@@ -162,7 +163,6 @@ struct LogView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .padding(.horizontal)
                     }
-                    .padding(.top, 30)
 
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Last Event")
@@ -190,7 +190,6 @@ struct LogView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .padding(.horizontal)
                     }
-                    .padding(.top, 30)
                 }
                 .padding(.vertical, 30)
             }
