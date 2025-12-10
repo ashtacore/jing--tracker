@@ -88,10 +88,15 @@ struct LogView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 30) {
-                    VStack(spacing: 20) {
+        ScrollView {
+            VStack(spacing: 30) {
+                Text("Log Event")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
+                
+                VStack(spacing: 20) {
                         EventButton(
                             title: "Masturbated Today",
                             icon: "hand.raised.fill",
@@ -174,14 +179,14 @@ struct LogView: View {
                                 Image(systemName: "hand.raised.fill")
                                     .foregroundStyle(.blue)
                                     .frame(width: 30)
-                                Text("Masturbation: \(daysSinceMasturbation) days ago")
+                                Text(daysSinceMasturbation < 0 ? "Masturbation: No data yet" : "Masturbation: \(Int(abs(daysSinceMasturbation))) days ago")
                             }
                             
                             HStack {
                                 Image(systemName: "heart.fill")
                                     .foregroundStyle(.pink)
                                     .frame(width: 30)
-                                Text("Sex: \(daysSinceSex) days ago")
+                                Text(daysSinceSex < 0 ? "Sex: No data yet" : "Sex: \(Int(abs(daysSinceSex))) days ago")
                             }
                         }
                         .padding()
@@ -191,9 +196,8 @@ struct LogView: View {
                         .padding(.horizontal)
                     }
                 }
-                .padding(.vertical, 30)
+                .padding(.vertical, 15)
             }
-            .navigationTitle("Log Event")
             .sheet(isPresented: $showingDatePicker) {
                 DatePickerSheet(
                     eventType: selectedEventType,
@@ -208,6 +212,5 @@ struct LogView: View {
                     }
                 )
             }
-        }
     }
 }
