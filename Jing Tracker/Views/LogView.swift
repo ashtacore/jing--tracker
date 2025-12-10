@@ -88,15 +88,10 @@ struct LogView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 30) {
-                Text("Log Event")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
-                
-                VStack(spacing: 20) {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 30) {
+                    VStack(spacing: 20) {
                         EventButton(
                             title: "Masturbated Today",
                             icon: "hand.raised.fill",
@@ -198,6 +193,7 @@ struct LogView: View {
                 }
                 .padding(.vertical, 15)
             }
+            .navigationTitle("Log Event")
             .sheet(isPresented: $showingDatePicker) {
                 DatePickerSheet(
                     eventType: selectedEventType,
@@ -212,5 +208,6 @@ struct LogView: View {
                     }
                 )
             }
+        }
     }
 }
