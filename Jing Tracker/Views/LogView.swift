@@ -65,7 +65,7 @@ struct LogView: View {
         // Only fetch if no recent masturbation
         if !recentEvents.contains(where: { $0.type == .masturbation }) {
             let descriptor = FetchDescriptor<WellnessEvent>(
-                predicate: #Predicate { $0.type == EventType.masturbation },
+                predicate: #Predicate { $0.typeRawValue == EventType.masturbation.rawValue },
                 sortBy: [SortDescriptor(\.date, order: .reverse)]
             )
             if let result = try? modelContext.fetch(descriptor).first {
@@ -76,7 +76,7 @@ struct LogView: View {
         // Only fetch if no recent sex
         if !recentEvents.contains(where: { $0.type == .sex }) {
             let descriptor = FetchDescriptor<WellnessEvent>(
-                predicate: #Predicate { $0.type == EventType.sex },
+                predicate: #Predicate { $0.typeRawValue == EventType.sex.rawValue },
                 sortBy: [SortDescriptor(\.date, order: .reverse)]
             )
             if let result = try? modelContext.fetch(descriptor).first {
