@@ -7,16 +7,11 @@ enum EventType: String, Codable {
 
 @Model
 final class WellnessEvent {
-    private var typeRawValue: String
+    var type: EventType
     var date: Date
     
-    var type: EventType {
-        get { EventType(rawValue: typeRawValue) ?? .masturbation }
-        set { typeRawValue = newValue.rawValue }
-    }
-    
     init(type: EventType, date: Date = Date()) {
-        self.typeRawValue = type.rawValue
+        self.type = type
         self.date = date
     }
 }
