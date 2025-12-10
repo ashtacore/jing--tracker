@@ -1,21 +1,83 @@
 import SwiftUI
 
 struct LogView: View {
-    var masturbationDates: [Date]
-    var sexDates: [Date]
-    let onLogEvent: (EventType, Date) -> Void
+    @Environment(\.modelContext) private var modelContext
+    @Query(filter: #Predicate<WellnessEvent> { event in
+        event.date >= thirtyDaysAgo
+    }, sort: \WellnessEvent.date, order: .reverse) private var events: [WellnessEvent]
     
+    // Date Picker control variables
     @State private var showingDatePicker = false
     @State private var selectedEventType: EventType?
-    @State private var loggedMasturbation = false
-    @State private var loggedSex = false
+
+    // Cache for last events to avoid unnecessary fetches
+    @State private var cachedLastMasturbation: Date?
+    @State private var cachedLastSex: Date?
     
-    var hasMasturbatedToday: Bool {
+    // Returns negative if no data
+    var daysSinceMasturbation: Double {
+        if let recent = recentEvents.first(where: { $0.type == .masturbation }) {
+            return recent.date.timeIntervalSinceNow / 86400
+        }
+        return cachedLastMasturbation?.timeIntervalSinceNow ?? -1 / 86400
+    }
+    
+    // Returns negative if no data
+    var daysSinceSex: Double {
+        if let recent = recentEvents.first(where: { $0.type == .sex }) {
+            return recent.date.timeIntervalSinceNow / 86400
+        }
+        return cachedLastSex?.timeIntervalSinceNow ?? -1 / 86400
+    }
+
+    var masturbationDates: [Date] {
+        events.filter { $0.type == .masturbation }.map { $0.date }
+    }
+    
+    var sexDates: [Date] {
+        events.filter { $0.type == .sex }.map { $0.date }
+    }
+    
+    var hasMasturbatedRecently: Bool {
         masturbationDates.contains(where: { Calendar.current.isDateInToday($0) })
     }
     
-    var hadSexToday: Bool {
+    var hadSexRecently: Bool {
         sexDates.contains(where: { Calendar.current.isDateInToday($0) })
+    }
+
+    func logEvent(type: EventType, date: Date = Date()) {
+        let calendar = Calendar.current
+        let existingDates = type == .masturbation ? masturbationDates : sexDates
+        
+        if !existingDates.contains(where: { calendar.isDate($0, inSameDayAs: date) }) {
+            let newEvent = WellnessEvent(type: type, date: date)
+            modelContext.insert(newEvent)
+        }
+    }
+
+    private func fetchOlderEventsIfNeeded() {
+        // Only fetch if no recent masturbation
+        if !recentEvents.contains(where: { $0.type == .masturbation }) {
+            let descriptor = FetchDescriptor<WellnessEvent>(
+                predicate: #Predicate { $0.typeRawValue == "masturbation" },
+                sortBy: [SortDescriptor(\.date, order: .reverse)]
+            )
+            if let result = try? modelContext.fetch(descriptor).first {
+                cachedLastMasturbation = result.date
+            }
+        }
+        
+        // Only fetch if no recent sex
+        if !recentEvents.contains(where: { $0.type == .sex }) {
+            let descriptor = FetchDescriptor<WellnessEvent>(
+                predicate: #Predicate { $0.typeRawValue == "sex" },
+                sortBy: [SortDescriptor(\.date, order: .reverse)]
+            )
+            if let result = try? modelContext.fetch(descriptor).first {
+                cachedLastSex = result.date
+            }
+        }
     }
     
     var body: some View {
@@ -28,11 +90,10 @@ struct LogView: View {
                             icon: "hand.raised.fill",
                             isLogged: hasMasturbatedToday,
                             action: {
-                                onLogEvent(.masturbation, Date())
-                                loggedMasturbation.toggle()
+                                logEvent(.masturbation, Date())
                             }
                         )
-                        .sensoryFeedback(.success, trigger: loggedMasturbation)
+                        .sensoryFeedback(.success, trigger: lastMasturbationDate)
                         
                         Button {
                             selectedEventType = .masturbation
@@ -51,13 +112,12 @@ struct LogView: View {
                         EventButton(
                             title: "Had Sex Today",
                             icon: "heart.fill",
-                            isLogged: hadSexToday,
+                            isLogged: hadSexRecently,
                             action: {
-                                onLogEvent(.sex, Date())
-                                loggedSex.toggle()
+                                logEvent(.sex, Date())
                             }
                         )
-                        .sensoryFeedback(.success, trigger: loggedSex)
+                        .sensoryFeedback(.success, trigger: lastSexDate)
                         
                         Button {
                             selectedEventType = .sex
@@ -70,7 +130,7 @@ struct LogView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Recent Activity")
+                        Text("Last 30 Days")
                             .font(.headline)
                             .padding(.horizontal)
                         
@@ -87,6 +147,34 @@ struct LogView: View {
                                     .foregroundStyle(.pink)
                                     .frame(width: 30)
                                 Text("Sex: \(sexDates.count) events")
+                            }
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color(uiColor: .secondarySystemGroupedBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal)
+                    }
+                    .padding(.top, 30)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Last Event")
+                            .font(.headline)
+                            .padding(.horizontal)
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Image(systemName: "hand.raised.fill")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: 30)
+                                Text("Masturbation: \(daysSinceMasturbation) days ago")
+                            }
+                            
+                            HStack {
+                                Image(systemName: "heart.fill")
+                                    .foregroundStyle(.pink)
+                                    .frame(width: 30)
+                                Text("Sex: \(daysSinceSex) days ago")
                             }
                         }
                         .padding()
