@@ -9,8 +9,8 @@ private class Coordinator: NSObject, UICalendarViewDelegate, UICalendarSelection
     private lazy var calendar = Calendar.current
     
     init(masturbationDates: [Date], sexDates: [Date], onDateSelected: @escaping (Date) -> Void) {
-        self.blueDates = blueDates
-        self.redDates = redDates
+        self.masturbationDates = masturbationDates
+        self.sexDates = sexDates
         self.onDateSelected = onDateSelected
     }
     
