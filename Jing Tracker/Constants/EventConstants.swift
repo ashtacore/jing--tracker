@@ -1,4 +1,4 @@
-import Foundation // or UIKit, SwiftUI, etc., depending on your needs
+import SwiftUI
 
 struct EventConstants {
     // API related constants
@@ -12,23 +12,19 @@ struct EventConstants {
 
     static func EventIcon(for eventType: EventType) -> String {
         switch eventType {
-        case .Masturbation:
+        case .masturbation:
             return "hand.raised.fill"
-        case .Sex:
+        case .sex:
             return "heart.fill"
-        default:
-            return "questionmark.circle"
         }
     }
 
     static func EventColor(for eventType: EventType) -> Color {
         switch eventType {
-        case .Masturbation:
+        case .masturbation:
             return .blue
-        case .Sex:
+        case .sex:
             return .pink
-        default:
-            return .gray
         }
     }
 }

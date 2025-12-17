@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct DateRangePicker: View {
-    @Binding private var startDate: Date
-    @Binding private var endDate: Date
+    @Binding var startDate: Date
+    @Binding var endDate: Date
     
     var body: some View {
         VStack(spacing: 12) {

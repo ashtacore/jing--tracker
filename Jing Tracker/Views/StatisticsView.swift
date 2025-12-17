@@ -6,8 +6,7 @@ struct StatisticsView: View {
     @Query(sort: \WellnessEvent.date, order: .forward) private var events: [WellnessEvent]
 
     var firstEventDate: Date {
-        let allDates = recentEvents.map { $0.date }
-        return allDates.last ?? Date()
+        return events.first?.date ?? Date()
     }
     
     @State private var startDate: Date = firstEventDate
@@ -15,7 +14,7 @@ struct StatisticsView: View {
     @State private var selectedCalendarDate: Date?
     @State private var showingDayDetail = false
 
-    var events: [WellnessEvent] {
+    var inRangeEvents: [WellnessEvent] {
         events
             .filter { $0.date >= startDate && $0.date <= endDate }
             .sorted(by: { $0.date < $1.date })
@@ -46,14 +45,14 @@ struct StatisticsView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
                         
-                        averageCard(
+                        AverageCard(
                             event: .Masturbation,
-                            events: events,
+                            events: inRangeEvents,
                         )
                         
-                        averageCard(
+                        AverageCard(
                             event: .Sex,
-                            events: events,
+                            events: inRangeEvents,
                         )
                     }
                     
