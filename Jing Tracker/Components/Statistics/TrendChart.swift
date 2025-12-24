@@ -1,4 +1,5 @@
 import SwiftUI
+import Charts
 
 enum TimePeriod: String, CaseIterable {
     case week = "Week"
@@ -7,9 +8,9 @@ enum TimePeriod: String, CaseIterable {
 }
 
 struct TrendChart: View {
-    @Binding var masturbationDates: [Date]
-    @Binding var sexDates: [Date]
-    @Binding var endDate: Date
+    var masturbationDates: [Date]
+    var sexDates: [Date]
+    var endDate: Date
     @State private var selectedPeriod: TimePeriod = .week
 
     private var chartDateFormat: Date.FormatStyle {
@@ -83,8 +84,8 @@ struct TrendChart: View {
                     }
                 }
                 .chartForegroundStyleScale([
-                    "Masturbation": EventConstants.EventColor(for: .Masturbation),
-                    "Sex": EventConstants.EventColor(for: .Sex)
+                    "Masturbation": EventConstants.EventColor(for: .masturbation),
+                    "Sex": EventConstants.EventColor(for: .sex)
                 ])
                 .chartXAxis {
                     AxisMarks(values: .automatic) { _ in

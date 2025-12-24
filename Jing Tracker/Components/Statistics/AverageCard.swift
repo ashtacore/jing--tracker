@@ -3,7 +3,8 @@ import SwiftUI
 struct AverageCard: View {
     var event: EventType
     var events: [WellnessEvent]
-
+    var endDate: Date
+    
     var eventDates: [Date] {
         events
             .filter { $0.type == event }

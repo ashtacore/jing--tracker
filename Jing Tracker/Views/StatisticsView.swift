@@ -5,18 +5,18 @@ import Charts
 struct StatisticsView: View {
     @Query(sort: \WellnessEvent.date, order: .forward) private var events: [WellnessEvent]
 
-    var firstEventDate: Date {
-        return events.first?.date ?? Date()
-    }
-    
-    @State private var startDate: Date = firstEventDate
+    @State private var startDate: Date?
     @State private var endDate: Date = Date()
     @State private var selectedCalendarDate: Date?
     @State private var showingDayDetail = false
 
+    var effectiveStartDate: Date {
+        startDate ?? events.first?.date ?? Date()
+    }
+    
     var inRangeEvents: [WellnessEvent] {
         events
-            .filter { $0.date >= startDate && $0.date <= endDate }
+            .filter { $0.date >= effectiveStartDate && $0.date <= endDate }
             .sorted(by: { $0.date < $1.date })
     }
     
@@ -46,47 +46,32 @@ struct StatisticsView: View {
                             .padding(.horizontal)
                         
                         AverageCard(
-                            event: .Masturbation,
+                            event: .masturbation,
                             events: inRangeEvents,
+                            endDate: endDate
                         )
                         
                         AverageCard(
-                            event: .Sex,
+                            event: .sex,
                             events: inRangeEvents,
+                            endDate: endDate
                         )
                     }
                     
                     // Trend Chart Section
                     TrendChart(
-                        masturbationDates: $masturbationDates,
-                        sexDates: $sexDates,
-                        startDate: $startDate,
-                        endDate: $endDate
+                        masturbationDates: masturbationDates,
+                        sexDates: sexDates,
+                        endDate: endDate
                     )
                     
                     // Calendar Section
-                    CalendarView(
-                        masturbationDates: $masturbationDates,
-                        sexDates: $sexDates,
-                        onDateSelected: { date in
-                            selectedCalendarDate = date
-                            showingDayDetail = true
-                        },
+                    CalendarViewWithInfo(
                     )
                 }
                 .padding(.vertical)
             }
             .navigationTitle("Statistics")
-            .alert (
-                selectedCalendarDate.map { "Selected Date: \($0,String(format: "yyyy-MM-dd"))" } ?? "",
-                isPresented: $showingDayDetail,
-                message: { Text("Details for the selected date") },
-            )
-            //.sheet(isPresented: $showingDayDetail) {
-            //    if let selectedDate = selectedCalendarDate {
-            //        DayInfoPopup(selectedDate: $selectedDate, events: $events)
-            //    }
-            //}
         }
     }
 }
