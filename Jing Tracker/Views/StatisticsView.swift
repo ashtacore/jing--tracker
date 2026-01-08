@@ -64,10 +64,6 @@ struct StatisticsView: View {
                         sexDates: sexDates,
                         endDate: endDate
                     )
-                    
-                    // Calendar Section
-                    CalendarViewWithInfo(
-                    )
                 }
                 .padding(.vertical)
             }

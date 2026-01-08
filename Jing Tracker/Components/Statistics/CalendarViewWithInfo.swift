@@ -1,47 +1,43 @@
 import SwiftUI
 import SwiftUICalendar
+import SwiftData
 
 struct CalendarViewWithInfo: View {
-    var informations = [YearMonthDay: [(String, Color)]]()
+    @Query(sort: \WellnessEvent.date, order: .forward) private var events: [WellnessEvent]
     
-    let controller = CalendarController()
+    @ObservedObject var controller = CalendarController()
     @State var focusDate: YearMonthDay? = nil
-    @State var focusInfo: [(String, Color)]? = nil
-
-    init() {
-        var date = YearMonthDay.current
-        informations[date] = []
-        informations[date]?.append(("Hello", Color.orange))
-        informations[date]?.append(("World", Color.blue))
-
-        date = date.addDay(value: 3)
-        informations[date] = []
-        informations[date]?.append(("Test", Color.pink))
+    @State var focusInfo: [EventType]? = nil
+    
+    private var informations: [YearMonthDay: [EventType]] {
+        var result = [YearMonthDay: [EventType]]()
+        let calendar = Calendar.current
         
-        date = date.addDay(value: 8)
-        informations[date] = []
-        informations[date]?.append(("Jack", Color.green))
+        for event in events {
+            let components = calendar.dateComponents([.year, .month, .day], from: event.date)
+            guard let year = components.year,
+                  let month = components.month,
+                  let day = components.day else { continue }
+            
+            let ymd = YearMonthDay(year: year, month: month, day: day)
+            if result[ymd] == nil {
+                result[ymd] = []
+            }
+            result[ymd]?.append(event.type)
+        }
         
-        date = date.addDay(value: 5)
-        informations[date] = []
-        informations[date]?.append(("Home", Color.red))
-
-        date = date.addDay(value: -23)
-        informations[date] = []
-        informations[date]?.append(("Meet at 8, Home", Color.purple))
-        
-        date = date.addDay(value: -5)
-        informations[date] = []
-        informations[date]?.append(("Home", Color.yellow))
-
-        date = date.addDay(value: -10)
-        informations[date] = []
-        informations[date]?.append(("Baseball", Color.green))
+        return result
     }
 
     var body: some View {
         GeometryReader { reader in
             VStack {
+                Text("\(controller.yearMonth.monthShortString), \(String(controller.yearMonth.year))")
+                    .font(.title)
+                    .padding(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
+                Button("Today") {
+                    controller.scrollTo(YearMonth.current, isAnimate: true)
+                }
                 CalendarView(controller, header: { week in
                     GeometryReader { geometry in
                         Text(week.shortString)
@@ -56,7 +52,7 @@ struct CalendarViewWithInfo: View {
                                     .font(.system(size: 10, weight: .bold, design: .default))
                                     .padding(4)
                                     .foregroundColor(.white)
-                                    .background(Color.red.opacity(0.95))
+                                    .background(Color.purple.opacity(0.95))
                                     .cornerRadius(14)
                             } else {
                                 Text("\(date.day)")
@@ -68,20 +64,21 @@ struct CalendarViewWithInfo: View {
                             if let infos = informations[date] {
                                 ForEach(infos.indices, id: \.self) { index in
                                     let info = infos[index]
+                                    let color = EventConstants.EventColor(for: info).opacity(0.75)
                                     if focusInfo != nil {
                                         Rectangle()
-                                            .fill(info.1.opacity(0.75))
+                                            .fill(color)
                                             .frame(width: geometry.size.width, height: 4, alignment: .center)
                                             .cornerRadius(2)
                                             .opacity(date.isFocusYearMonth == true ? 1 : 0.4)
                                     } else {
-                                        Text(info.0)
+                                        Text(info.rawValue.capitalized)
                                             .lineLimit(1)
                                             .foregroundColor(.white)
                                             .font(.system(size: 8, weight: .bold, design: .default))
                                             .padding(EdgeInsets(top: 2, leading: 4, bottom: 2, trailing: 4))
                                             .frame(width: geometry.size.width, alignment: .center)
-                                            .background(info.1.opacity(0.75))
+                                            .background(color)
                                             .cornerRadius(4)
                                             .opacity(date.isFocusYearMonth == true ? 1 : 0.4)
                                     }
@@ -108,11 +105,12 @@ struct CalendarViewWithInfo: View {
                 if let infos = focusInfo {
                     List(infos.indices, id: \.self) { index in
                         let info = infos[index]
+                        let color = EventConstants.EventColor(for: info).opacity(0.75)
                         HStack(alignment: .center, spacing: 0) {
                             Circle()
-                                .fill(info.1.opacity(0.75))
+                                .fill(color)
                                 .frame(width: 12, height: 12)
-                            Text(info.0)
+                            Text(info.rawValue.capitalized)
                                 .padding(.leading, 8)
                         }
                     }
@@ -120,14 +118,11 @@ struct CalendarViewWithInfo: View {
                 }
             }
         }
-        .navigationBarTitle("Info + Select")
     }
     
     private func getColor(_ date: YearMonthDay) -> Color {
         if date.dayOfWeek == .sun {
-            return Color.red
-        } else if date.dayOfWeek == .sat {
-            return Color.blue
+            return Color.primary
         } else {
             return Color.black
         }

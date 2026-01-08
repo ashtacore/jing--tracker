@@ -8,7 +8,7 @@ struct EventConstants {
     }
     
     // General app settings
-    static let appName = "MyApp"
+    static let appName = "Jing Tracker"
 
     static func EventIcon(for eventType: EventType) -> String {
         switch eventType {

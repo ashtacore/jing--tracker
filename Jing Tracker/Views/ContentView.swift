@@ -5,14 +5,19 @@ struct ContentView: View {
     var body: some View {
         TabView {
             LogView()
-            .tabItem {
-                Label("Log", systemImage: "plus.circle.fill")
-            }
+                .tabItem {
+                    Label("Log", systemImage: "plus.circle.fill")
+                }
             
             StatisticsView()
-            .tabItem {
-                Label("Statistics", systemImage: "chart.bar.fill")
-            }
+                .tabItem {
+                    Label("Statistics", systemImage: "chart.bar.fill")
+                }
+            
+            CalendarViewWithInfo()
+                .tabItem {
+                    Label("Calendar", systemImage: "calendar")
+                }
         }
     }
 }
