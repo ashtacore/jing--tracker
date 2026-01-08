@@ -61,26 +61,28 @@ struct CalendarViewWithInfo: View {
                                     .foregroundColor(getColor(date))
                                     .padding(4)
                             }
-                            if let infos = informations[date] {
-                                ForEach(infos.indices, id: \.self) { index in
-                                    let info = infos[index]
-                                    let color = EventConstants.EventColor(for: info).opacity(0.75)
-                                    if focusInfo != nil {
-                                        Rectangle()
-                                            .fill(color)
-                                            .frame(width: geometry.size.width, height: 4, alignment: .center)
-                                            .cornerRadius(2)
-                                            .opacity(date.isFocusYearMonth == true ? 1 : 0.4)
-                                    } else {
-                                        Text(info.rawValue.capitalized)
-                                            .lineLimit(1)
-                                            .foregroundColor(.white)
-                                            .font(.system(size: 8, weight: .bold, design: .default))
-                                            .padding(EdgeInsets(top: 2, leading: 4, bottom: 2, trailing: 4))
-                                            .frame(width: geometry.size.width, alignment: .center)
-                                            .background(color)
-                                            .cornerRadius(4)
-                                            .opacity(date.isFocusYearMonth == true ? 1 : 0.4)
+                            if let daysEvents = informations[date] {
+                                ForEach(EventType.allCases) { event in
+                                    let eventCount = daysEvents.count { $0 == event }
+                                    if eventCount > 0 {
+                                        let color = event.color.opacity(0.75)
+                                        if focusInfo != nil {
+                                            Rectangle()
+                                                .fill(color)
+                                                .frame(width: geometry.size.width, height: 4, alignment: .center)
+                                                .cornerRadius(2)
+                                                .opacity(date.isFocusYearMonth == true ? 1 : 0.4)
+                                        } else {
+                                            Text(event.title)
+                                                .lineLimit(1)
+                                                .foregroundColor(.white)
+                                                .font(.system(size: 8, weight: .bold, design: .default))
+                                                .padding(EdgeInsets(top: 2, leading: 4, bottom: 2, trailing: 4))
+                                                .frame(width: geometry.size.width, alignment: .center)
+                                                .background(color)
+                                                .cornerRadius(4)
+                                                .opacity(date.isFocusYearMonth == true ? 1 : 0.4)
+                                        }
                                     }
                                 }
                             }
@@ -102,15 +104,15 @@ struct CalendarViewWithInfo: View {
                         }
                     }
                 })
-                if let infos = focusInfo {
-                    List(infos.indices, id: \.self) { index in
-                        let info = infos[index]
-                        let color = EventConstants.EventColor(for: info).opacity(0.75)
+                if let daysEvents = focusInfo {
+                    List(EventType.allCases) { event in
+                        let eventCount = daysEvents.count { $0 == event }
+                        let color = event.color.opacity(0.75)
                         HStack(alignment: .center, spacing: 0) {
                             Circle()
                                 .fill(color)
                                 .frame(width: 12, height: 12)
-                            Text(info.rawValue.capitalized)
+                            Text("\(event.title) x\(eventCount)")
                                 .padding(.leading, 8)
                         }
                     }
