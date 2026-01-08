@@ -84,8 +84,8 @@ struct TrendChart: View {
                     }
                 }
                 .chartForegroundStyleScale([
-                    "Masturbation": EventConstants.EventColor(for: .masturbation),
-                    "Sex": EventConstants.EventColor(for: .sex)
+                    EventType.masturbation.title: EventType.masturbation.color,
+                    EventType.sex.title: EventType.sex.color
                 ])
                 .chartXAxis {
                     AxisMarks(values: .automatic) { _ in

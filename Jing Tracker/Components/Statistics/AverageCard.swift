@@ -45,8 +45,8 @@ struct AverageCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Image(systemName: EventConstants.EventIcon(for: event))
-                    .foregroundStyle(EventConstants.EventColor(for: event))
+                Image(systemName: event.icon)
+                    .foregroundStyle(event.color)
                     .font(.title2)
                 Text(event.rawValue.capitalized + " Averages")
                     .font(.headline)
