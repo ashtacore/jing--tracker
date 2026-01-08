@@ -1,14 +1,8 @@
 import SwiftUI
 
 struct EventConstants {
-    // API related constants
-    struct API {
-        static let baseURL = "https://api.example.com"
-        static let timeoutInterval: Double = 30.0
-    }
-    
-    // General app settings
     static let appName = "Jing Tracker"
+    static let eventCooldown = TimeInterval(1 * 60) // 5 minutes in seconds
 
     static func EventIcon(for eventType: EventType) -> String {
         switch eventType {

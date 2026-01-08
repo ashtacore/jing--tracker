@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct LogView: View {
+    @State private var currentTime = Date()
     @Environment(\.modelContext) private var modelContext
     
     static var thirtyDaysAgo: Date {
@@ -52,13 +53,8 @@ struct LogView: View {
     }
 
     func logEvent(type: EventType, date: Date = Date()) {
-        let calendar = Calendar.current
-        let existingDates = type == .masturbation ? masturbationDates : sexDates
-        
-        if !existingDates.contains(where: { calendar.isDate($0, inSameDayAs: date) }) {
-            let newEvent = WellnessEvent(type: type, date: date)
-            modelContext.insert(newEvent)
-        }
+        let newEvent = WellnessEvent(type: type, date: date)
+        modelContext.insert(newEvent)
     }
 
     private func fetchOlderEventsIfNeeded() {
