@@ -19,22 +19,6 @@ struct LogView: View {
     // Cache for last events to avoid unnecessary fetches
     @State private var cachedLastMasturbation: Date?
     @State private var cachedLastSex: Date?
-    
-    // Returns negative if no data
-    var daysSinceMasturbation: Double {
-        if let recent = recentEvents.first(where: { $0.type == .masturbation }) {
-            return recent.date.timeIntervalSinceNow / 86400
-        }
-        return cachedLastMasturbation?.timeIntervalSinceNow ?? -1 / 86400
-    }
-    
-    // Returns negative if no data
-    var daysSinceSex: Double {
-        if let recent = recentEvents.first(where: { $0.type == .sex }) {
-            return recent.date.timeIntervalSinceNow / 86400
-        }
-        return cachedLastSex?.timeIntervalSinceNow ?? -1 / 86400
-    }
 
     var masturbationDates: [Date] {
         recentEvents.filter { $0.type == .masturbation }.map { $0.date }
@@ -55,11 +39,19 @@ struct LogView: View {
     func logEvent(type: EventType, date: Date = Date()) {
         let newEvent = WellnessEvent(type: type, date: date)
         modelContext.insert(newEvent)
+        
+        // Update last event cache
+        switch type {
+            case .masturbation: cachedLastMasturbation = date
+            case .sex: cachedLastSex = date
+        }
     }
 
-    private func fetchOlderEventsIfNeeded() {
+    init() {
+        cachedLastMasturbation = recentEvents.first(where: { $0.type == .masturbation })?.date
+        
         // Only fetch if no recent masturbation
-        if !recentEvents.contains(where: { $0.type == .masturbation }) {
+        if cachedLastMasturbation == nil {
             let typeRawValue = EventType.masturbation.rawValue
             let descriptor = FetchDescriptor<WellnessEvent>(
                 predicate: #Predicate { $0.type.rawValue == typeRawValue },
@@ -70,8 +62,10 @@ struct LogView: View {
             }
         }
         
+        cachedLastSex = recentEvents.first(where: { $0.type == .sex})?.date
+        
         // Only fetch if no recent sex
-        if !recentEvents.contains(where: { $0.type == .sex }) {
+        if cachedLastSex == nil {
             let typeRawValue = EventType.sex.rawValue
             let descriptor = FetchDescriptor<WellnessEvent>(
                 predicate: #Predicate { $0.type.rawValue == typeRawValue },
@@ -96,7 +90,7 @@ struct LogView: View {
                                 logEvent(type: .masturbation)
                             }
                         )
-                        .sensoryFeedback(.success, trigger: daysSinceMasturbation)
+                        .sensoryFeedback(.success, trigger: cachedLastMasturbation)
                         
                         Button {
                             selectedEventType = .masturbation
@@ -117,7 +111,7 @@ struct LogView: View {
                                 logEvent(type: .sex)
                             }
                         )
-                        .sensoryFeedback(.success, trigger: daysSinceSex)
+                        .sensoryFeedback(.success, trigger: cachedLastSex)
                         
                         Button {
                             selectedEventType = .sex
@@ -170,14 +164,14 @@ struct LogView: View {
                                 Image(systemName: "hand.raised.fill")
                                     .foregroundStyle(.blue)
                                     .frame(width: 30)
-                                Text(daysSinceMasturbation < 0 ? "Masturbation: No data yet" : "Masturbation: \(Int(abs(daysSinceMasturbation))) days ago")
+                                Text(cachedLastMasturbation == nil ? "Masturbation: No data yet" : "Masturbation: \(Int(abs(cachedLastMasturbation!.timeIntervalSinceNow / 86400))) days ago")
                             }
                             
                             HStack {
                                 Image(systemName: "heart.fill")
                                     .foregroundStyle(.pink)
                                     .frame(width: 30)
-                                Text(daysSinceSex < 0 ? "Sex: No data yet" : "Sex: \(Int(abs(daysSinceSex))) days ago")
+                                Text(cachedLastSex == nil ? "Sex: No data yet" : "Sex: \(Int(abs(cachedLastSex!.timeIntervalSinceNow / 86400))) days ago")
                             }
                         }
                         .padding()
