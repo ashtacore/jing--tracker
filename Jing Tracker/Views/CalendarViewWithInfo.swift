@@ -58,7 +58,7 @@ struct CalendarViewWithInfo: View {
                                 Text("\(date.day)")
                                     .font(.system(size: 10, weight: .light, design: .default))
                                     .opacity(date.isFocusYearMonth == true ? 1 : 0.4)
-                                    .foregroundColor(getColor(date))
+                                    .foregroundColor(Color.primary)
                                     .padding(4)
                             }
                             if let daysEvents = informations[date] {
@@ -119,14 +119,6 @@ struct CalendarViewWithInfo: View {
                     .frame(width: reader.size.width, height: 160, alignment: .center)
                 }
             }
-        }
-    }
-    
-    private func getColor(_ date: YearMonthDay) -> Color {
-        if date.dayOfWeek == .sun {
-            return Color.primary
-        } else {
-            return Color.black
         }
     }
 }
