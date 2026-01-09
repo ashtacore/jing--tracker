@@ -28,6 +28,7 @@ struct SettingsView: View {
                     } label: {
                         Label("Export Data as CSV", systemImage: "square.and.arrow.up")
                     }
+                    .foregroundStyle(Color.green)
                     
                     Button {
                         importMode = .merge
@@ -42,13 +43,14 @@ struct SettingsView: View {
                     } label: {
                         Label("Import CSV (Replace All)", systemImage: "arrow.triangle.2.circlepath")
                     }
-                    .foregroundColor(.orange)
+                    .foregroundStyle(Color.orange)
                     
                     Button(role: .destructive) {
                         showingClearConfirmation = true
                     } label: {
                         Label("Clear All Data", systemImage: "trash")
                     }
+                    .foregroundStyle(Color.red)
                 }
                 
                 Section("About") {

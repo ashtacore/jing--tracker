@@ -98,7 +98,7 @@ struct LogView: View {
                         } label: {
                             Label("Log for Different Day", systemImage: "calendar")
                                 .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.purpleAccent)
                         }
                     }
                     
@@ -119,7 +119,7 @@ struct LogView: View {
                         } label: {
                             Label("Log for Different Day", systemImage: "calendar")
                                 .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.purpleAccent)
                         }
                     }
                     .padding(.top, 15)
@@ -200,4 +200,9 @@ struct LogView: View {
             }
         }
     }
+}
+
+#Preview {
+    LogView()
+        .modelContainer(for: WellnessEvent.self, inMemory: true)
 }

@@ -38,6 +38,7 @@ struct CalendarViewWithInfo: View {
                 Button("Today") {
                     controller.scrollTo(YearMonth.current, isAnimate: true)
                 }
+                .foregroundStyle(Color.purpleAccent.opacity(0.95))
                 CalendarView(controller, header: { week in
                     GeometryReader { geometry in
                         Text(week.shortString)
@@ -52,7 +53,7 @@ struct CalendarViewWithInfo: View {
                                     .font(.system(size: 10, weight: .bold, design: .default))
                                     .padding(4)
                                     .foregroundColor(.white)
-                                    .background(Color.purple.opacity(0.95))
+                                    .background(Color.purpleAccent.opacity(0.95))
                                     .cornerRadius(14)
                             } else {
                                 Text("\(date.day)")
