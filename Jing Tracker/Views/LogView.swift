@@ -24,8 +24,18 @@ struct LogView: View {
         recentEvents.filter { $0.type == .masturbation }.map { $0.date }
     }
     
+    var todaysMasturbation: [Date] {
+        let calendar = Calendar.current
+        return masturbationDates.filter { calendar.isDate($0, inSameDayAs: Date()) }
+    }
+    
     var sexDates: [Date] {
         recentEvents.filter { $0.type == .sex }.map { $0.date }
+    }
+    
+    var todaysSex: [Date] {
+        let calendar = Calendar.current
+        return sexDates.filter { calendar.isDate($0, inSameDayAs: Date()) }
     }
 
     func logEvent(type: EventType, date: Date = Date()) {
@@ -77,7 +87,7 @@ struct LogView: View {
                         EventButton(
                             title: "Masturbated Today",
                             icon: "hand.raised.fill",
-                            todaysCount: masturbationDates.count,
+                            todaysCount: todaysMasturbation.count,
                             action: {
                                 logEvent(type: .masturbation)
                             }
@@ -98,7 +108,7 @@ struct LogView: View {
                         EventButton(
                             title: "Had Sex Today",
                             icon: "heart.fill",
-                            todaysCount: sexDates.count,
+                            todaysCount: todaysSex.count,
                             action: {
                                 logEvent(type: .sex)
                             }
