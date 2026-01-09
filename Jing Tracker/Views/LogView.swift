@@ -27,14 +27,6 @@ struct LogView: View {
     var sexDates: [Date] {
         recentEvents.filter { $0.type == .sex }.map { $0.date }
     }
-    
-    var hasMasturbatedRecently: Bool {
-        masturbationDates.contains(where: { Calendar.current.isDateInToday($0) })
-    }
-    
-    var hadSexRecently: Bool {
-        sexDates.contains(where: { Calendar.current.isDateInToday($0) })
-    }
 
     func logEvent(type: EventType, date: Date = Date()) {
         let newEvent = WellnessEvent(type: type, date: date)
@@ -85,7 +77,7 @@ struct LogView: View {
                         EventButton(
                             title: "Masturbated Today",
                             icon: "hand.raised.fill",
-                            isLogged: hasMasturbatedRecently,
+                            todaysCount: masturbationDates.count,
                             action: {
                                 logEvent(type: .masturbation)
                             }
@@ -106,7 +98,7 @@ struct LogView: View {
                         EventButton(
                             title: "Had Sex Today",
                             icon: "heart.fill",
-                            isLogged: hadSexRecently,
+                            todaysCount: sexDates.count,
                             action: {
                                 logEvent(type: .sex)
                             }
