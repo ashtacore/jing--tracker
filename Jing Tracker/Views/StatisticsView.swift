@@ -11,7 +11,7 @@ struct StatisticsView: View {
     @State private var showingDayDetail = false
 
     var effectiveStartDate: Date {
-        startDate ?? events.first?.date ?? Date()
+        startDate ?? events.last?.date ?? Date()
     }
     
     var inRangeEvents: [WellnessEvent] {
