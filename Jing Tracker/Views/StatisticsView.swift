@@ -51,12 +51,14 @@ struct StatisticsView: View {
                         AverageCard(
                             event: .masturbation,
                             events: inRangeEvents,
+                            startDate: effectiveStartDate.wrappedValue,
                             endDate: endDate
                         )
                         
                         AverageCard(
                             event: .sex,
                             events: inRangeEvents,
+                            startDate: effectiveStartDate.wrappedValue,
                             endDate: endDate
                         )
                     }
@@ -65,6 +67,7 @@ struct StatisticsView: View {
                     TrendChart(
                         masturbationDates: masturbationDates,
                         sexDates: sexDates,
+                        startDate: effectiveStartDate.wrappedValue,
                         endDate: endDate
                     )
                 }

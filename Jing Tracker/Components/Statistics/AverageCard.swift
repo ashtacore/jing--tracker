@@ -3,6 +3,7 @@ import SwiftUI
 struct AverageCard: View {
     var event: EventType
     var events: [WellnessEvent]
+    var startDate: Date
     var endDate: Date
     
     var eventDates: [Date] {
@@ -12,15 +13,15 @@ struct AverageCard: View {
     }
 
     var weeklyAvg: Double? {
-        averageEventsPerWeek(sortedDates: eventDates, endDate: endDate)
+        averageEventsPerWeek(sortedDates: eventDates, startDate: startDate, endDate: endDate)
     }
     
     var monthlyAvg: Double? {
-        averageEventsPerMonth(sortedDates: eventDates, endDate: endDate)
+        averageEventsPerMonth(sortedDates: eventDates, startDate: startDate, endDate: endDate)
     }
     
     var yearlyAvg: Double? {
-        averageEventsPerYear(sortedDates: eventDates, endDate: endDate)
+        averageEventsPerYear(sortedDates: eventDates, startDate: startDate, endDate: endDate)
     }
 
     private func averageItem(label: String, value: Double?) -> some View {

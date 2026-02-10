@@ -10,6 +10,7 @@ enum TimePeriod: String, CaseIterable {
 struct TrendChart: View {
     var masturbationDates: [Date]
     var sexDates: [Date]
+    var startDate: Date
     var endDate: Date
     @State private var selectedPeriod: TimePeriod = .week
 
@@ -27,22 +28,22 @@ struct TrendChart: View {
     var masturbationTrendData: [(average: Double, startDate: Date)]? {
         switch selectedPeriod {
         case .week:
-            return averagesPerWeek(sortedDates: masturbationDates, endDate: endDate)
+            return averagesPerWeek(sortedDates: masturbationDates, startDate: startDate, endDate: endDate)
         case .month:
-            return averagesPerMonth(sortedDates: masturbationDates, endDate: endDate)
+            return averagesPerMonth(sortedDates: masturbationDates, startDate: startDate, endDate: endDate)
         case .year:
-            return averagesPerYear(sortedDates: masturbationDates, endDate: endDate)
+            return averagesPerYear(sortedDates: masturbationDates, startDate: startDate, endDate: endDate)
         }
     }
     
     var sexTrendData: [(average: Double, startDate: Date)]? {
         switch selectedPeriod {
         case .week:
-            return averagesPerWeek(sortedDates: sexDates, endDate: endDate)
+            return averagesPerWeek(sortedDates: sexDates, startDate: startDate, endDate: endDate)
         case .month:
-            return averagesPerMonth(sortedDates: sexDates, endDate: endDate)
+            return averagesPerMonth(sortedDates: sexDates, startDate: startDate, endDate: endDate)
         case .year:
-            return averagesPerYear(sortedDates: sexDates, endDate: endDate)
+            return averagesPerYear(sortedDates: sexDates, startDate: startDate, endDate: endDate)
         }
     }
 

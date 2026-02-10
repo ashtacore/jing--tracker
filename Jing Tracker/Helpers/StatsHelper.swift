@@ -2,18 +2,16 @@ import Foundation
 
 // These functions return a double which represents the average number of events per week, month, or year,
 // considering only complete weeks, months, or years from the first event date to the endDate provided.
-func averageEventsPerWeek(sortedDates: [Date], endDate: Date) -> Double? {
+func averageEventsPerWeek(sortedDates: [Date], startDate: Date, endDate: Date) -> Double? {
     guard !sortedDates.isEmpty else { return nil }
     
-    let firstDate = sortedDates[0]
-    
-    // Ensure endDate is after firstDate
-    guard endDate > firstDate else { return nil }
+    // Ensure endDate is after startDate
+    guard endDate > startDate else { return nil }
     
     let calendar = Calendar.current
     
-    // Calculate the number of complete weeks from first date to end date
-    let components = calendar.dateComponents([.day], from: firstDate, to: endDate)
+    // Calculate the number of complete weeks from start date to end date
+    let components = calendar.dateComponents([.day], from: startDate, to: endDate)
     guard let totalDays = components.day else { return nil }
     
     // Number of complete weeks (7 days = 1 week)
@@ -22,7 +20,7 @@ func averageEventsPerWeek(sortedDates: [Date], endDate: Date) -> Double? {
     guard completeWeeks > 0 else { return nil }
     
     // Only count events up to the last complete week boundary
-    let lastCompleteWeekEnd = calendar.date(byAdding: .day, value: completeWeeks * 7, to: firstDate)!
+    let lastCompleteWeekEnd = calendar.date(byAdding: .day, value: completeWeeks * 7, to: startDate)!
     
     // Count events within the complete weeks
     let eventsInCompleteWeeks = sortedDates.filter { $0 < lastCompleteWeekEnd }.count
@@ -33,20 +31,19 @@ func averageEventsPerWeek(sortedDates: [Date], endDate: Date) -> Double? {
     return averagePerWeek
 }
 
-func averageEventsPerMonth(sortedDates: [Date], endDate: Date) -> Double? {
+func averageEventsPerMonth(sortedDates: [Date], startDate: Date, endDate: Date) -> Double? {
     guard !sortedDates.isEmpty else { return nil }
     
-    let firstDate = sortedDates[0]
-    guard endDate > firstDate else { return nil }
+    guard endDate > startDate else { return nil }
     
     let calendar = Calendar.current
     
     // Get the number of complete months
-    let components = calendar.dateComponents([.month], from: firstDate, to: endDate)
+    let components = calendar.dateComponents([.month], from: startDate, to: endDate)
     guard let completeMonths = components.month, completeMonths > 0 else { return nil }
     
     // Calculate the boundary of the last complete month
-    let lastCompleteMonthEnd = calendar.date(byAdding: .month, value: completeMonths, to: firstDate)!
+    let lastCompleteMonthEnd = calendar.date(byAdding: .month, value: completeMonths, to: startDate)!
     
     // Count events within complete months
     let eventsInCompleteMonths = sortedDates.filter { $0 < lastCompleteMonthEnd }.count
@@ -54,20 +51,19 @@ func averageEventsPerMonth(sortedDates: [Date], endDate: Date) -> Double? {
     return Double(eventsInCompleteMonths) / Double(completeMonths)
 }
 
-func averageEventsPerYear(sortedDates: [Date], endDate: Date) -> Double? {
+func averageEventsPerYear(sortedDates: [Date], startDate: Date, endDate: Date) -> Double? {
     guard !sortedDates.isEmpty else { return nil }
     
-    let firstDate = sortedDates[0]
-    guard endDate > firstDate else { return nil }
+    guard endDate > startDate else { return nil }
     
     let calendar = Calendar.current
     
     // Get the number of complete years
-    let components = calendar.dateComponents([.year], from: firstDate, to: endDate)
+    let components = calendar.dateComponents([.year], from: startDate, to: endDate)
     guard let completeYears = components.year, completeYears > 0 else { return nil }
     
     // Calculate the boundary of the last complete year
-    let lastCompleteYearEnd = calendar.date(byAdding: .year, value: completeYears, to: firstDate)!
+    let lastCompleteYearEnd = calendar.date(byAdding: .year, value: completeYears, to: startDate)!
     
     // Count events within complete years
     let eventsInCompleteYears = sortedDates.filter { $0 < lastCompleteYearEnd }.count
@@ -79,14 +75,13 @@ func averageEventsPerYear(sortedDates: [Date], endDate: Date) -> Double? {
 // These functions return an array of tuples containing the average number of events and the start date
 // for each complete week, month, or year from the first event date to the endDate provided.
 // These functions are useful for generating trend data over time.
-func averagesPerWeek(sortedDates: [Date], endDate: Date) -> [(average: Double, startDate: Date)]? {
+func averagesPerWeek(sortedDates: [Date], startDate: Date, endDate: Date) -> [(average: Double, startDate: Date)]? {
     guard !sortedDates.isEmpty else { return nil }
     
-    let firstDate = sortedDates[0]
-    guard endDate > firstDate else { return nil }
+    guard endDate > startDate else { return nil }
     
     let calendar = Calendar.current
-    let components = calendar.dateComponents([.day], from: firstDate, to: endDate)
+    let components = calendar.dateComponents([.day], from: startDate, to: endDate)
     guard let totalDays = components.day else { return nil }
     
     let completeWeeks = totalDays / 7
@@ -96,8 +91,8 @@ func averagesPerWeek(sortedDates: [Date], endDate: Date) -> [(average: Double, s
     
     // For each complete week, count events
     for weekIndex in 0..<completeWeeks {
-        let weekStart = calendar.date(byAdding: .day, value: weekIndex * 7, to: firstDate)!
-        let weekEnd = calendar.date(byAdding: .day, value: (weekIndex + 1) * 7, to: firstDate)!
+        let weekStart = calendar.date(byAdding: .day, value: weekIndex * 7, to: startDate)!
+        let weekEnd = calendar.date(byAdding: .day, value: (weekIndex + 1) * 7, to: startDate)!
         
         let eventsInWeek = sortedDates.filter { $0 >= weekStart && $0 < weekEnd }.count
         results.append((Double(eventsInWeek), weekStart))
@@ -106,22 +101,21 @@ func averagesPerWeek(sortedDates: [Date], endDate: Date) -> [(average: Double, s
     return results
 }
 
-func averagesPerMonth(sortedDates: [Date], endDate: Date) -> [(average: Double, startDate: Date)]? {
+func averagesPerMonth(sortedDates: [Date], startDate: Date, endDate: Date) -> [(average: Double, startDate: Date)]? {
     guard !sortedDates.isEmpty else { return nil }
     
-    let firstDate = sortedDates[0]
-    guard endDate > firstDate else { return nil }
+    guard endDate > startDate else { return nil }
     
     let calendar = Calendar.current
-    let components = calendar.dateComponents([.month], from: firstDate, to: endDate)
+    let components = calendar.dateComponents([.month], from: startDate, to: endDate)
     guard let completeMonths = components.month, completeMonths > 0 else { return nil }
     
     var results: [(Double, Date)] = []
     
     // For each complete month, count events
     for monthIndex in 0..<completeMonths {
-        let monthStart = calendar.date(byAdding: .month, value: monthIndex, to: firstDate)!
-        let monthEnd = calendar.date(byAdding: .month, value: monthIndex + 1, to: firstDate)!
+        let monthStart = calendar.date(byAdding: .month, value: monthIndex, to: startDate)!
+        let monthEnd = calendar.date(byAdding: .month, value: monthIndex + 1, to: startDate)!
         
         let eventsInMonth = sortedDates.filter { $0 >= monthStart && $0 < monthEnd }.count
         results.append((Double(eventsInMonth), monthStart))
@@ -130,22 +124,21 @@ func averagesPerMonth(sortedDates: [Date], endDate: Date) -> [(average: Double, 
     return results
 }
 
-func averagesPerYear(sortedDates: [Date], endDate: Date) -> [(average: Double, startDate: Date)]? {
+func averagesPerYear(sortedDates: [Date], startDate: Date, endDate: Date) -> [(average: Double, startDate: Date)]? {
     guard !sortedDates.isEmpty else { return nil }
     
-    let firstDate = sortedDates[0]
-    guard endDate > firstDate else { return nil }
+    guard endDate > startDate else { return nil }
     
     let calendar = Calendar.current
-    let components = calendar.dateComponents([.year], from: firstDate, to: endDate)
+    let components = calendar.dateComponents([.year], from: startDate, to: endDate)
     guard let completeYears = components.year, completeYears > 0 else { return nil }
     
     var results: [(Double, Date)] = []
     
     // For each complete year, count events
     for yearIndex in 0..<completeYears {
-        let yearStart = calendar.date(byAdding: .year, value: yearIndex, to: firstDate)!
-        let yearEnd = calendar.date(byAdding: .year, value: yearIndex + 1, to: firstDate)!
+        let yearStart = calendar.date(byAdding: .year, value: yearIndex, to: startDate)!
+        let yearEnd = calendar.date(byAdding: .year, value: yearIndex + 1, to: startDate)!
         
         let eventsInYear = sortedDates.filter { $0 >= yearStart && $0 < yearEnd }.count
         results.append((Double(eventsInYear), yearStart))
