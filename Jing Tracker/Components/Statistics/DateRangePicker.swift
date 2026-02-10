@@ -1,13 +1,12 @@
 import SwiftUI
 
 struct DateRangePicker: View {
-    @Binding var startDate: Date?
+    @Binding var startDate: Date
     @Binding var endDate: Date
-    var defaultStartDate: Date = Date()
     
     private var effectiveStartDate: Binding<Date> {
         Binding(
-            get: { startDate ?? defaultStartDate },
+            get: { startDate },
             set: { startDate = $0 }
         )
     }
@@ -33,7 +32,7 @@ struct DateRangePicker: View {
                     Text("End Date")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    DatePicker("", selection: $endDate, in: (startDate ?? defaultStartDate)..., displayedComponents: .date)
+                    DatePicker("", selection: $endDate, in: (startDate)..., displayedComponents: .date)
                         .labelsHidden()
                 }
             }

@@ -10,13 +10,16 @@ struct StatisticsView: View {
     @State private var selectedCalendarDate: Date?
     @State private var showingDayDetail = false
 
-    var effectiveStartDate: Date {
-        startDate ?? events.last?.date ?? Date()
+    var effectiveStartDate: Binding<Date> {
+        Binding(
+            get: { startDate ?? events.first?.date ?? Date()},
+            set: { startDate = $0 }
+        )
     }
     
     var inRangeEvents: [WellnessEvent] {
         events
-            .filter { $0.date >= effectiveStartDate && $0.date <= endDate }
+            .filter { $0.date >= effectiveStartDate.wrappedValue && $0.date <= endDate }
             .sorted(by: { $0.date < $1.date })
     }
     
@@ -36,7 +39,7 @@ struct StatisticsView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 25) {
-                    DateRangePicker(startDate: $startDate, endDate: $endDate)
+                    DateRangePicker(startDate: effectiveStartDate, endDate: $endDate)
                     
                     // Averages Section
                     VStack(spacing: 16) {
