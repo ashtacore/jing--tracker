@@ -253,5 +253,5 @@ struct CSVDocument: FileDocument {
 
 #Preview {
     SettingsView()
-        .modelContainer(for: WellnessEvent.self, inMemory: true)
+        .modelContainer(MockDataGenerator.makeContainer())
 }

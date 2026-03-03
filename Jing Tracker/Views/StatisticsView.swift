@@ -77,3 +77,8 @@ struct StatisticsView: View {
         }
     }
 }
+
+#Preview {
+    StatisticsView()
+        .modelContainer(MockDataGenerator.makeContainer())
+}

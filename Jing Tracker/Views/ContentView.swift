@@ -28,5 +28,5 @@ struct ContentView: View {
 }
 #Preview {
     ContentView()
-        .modelContainer(for: WellnessEvent.self, inMemory: true)
+        .modelContainer(MockDataGenerator.makeContainer())
 }

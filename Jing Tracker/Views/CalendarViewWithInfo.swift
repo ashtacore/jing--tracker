@@ -171,8 +171,7 @@ struct CalendarViewWithInfo: View {
     }
 }
 
-struct CalendarViewWithInfo_Previews: PreviewProvider {
-    static var previews: some View {
-        CalendarViewWithInfo()
-    }
+#Preview {
+    CalendarViewWithInfo()
+        .modelContainer(MockDataGenerator.makeContainer())
 }

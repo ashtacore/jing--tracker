@@ -206,5 +206,5 @@ struct LogView: View {
 
 #Preview {
     LogView()
-        .modelContainer(for: WellnessEvent.self, inMemory: true)
+        .modelContainer(MockDataGenerator.makeContainer())
 }
