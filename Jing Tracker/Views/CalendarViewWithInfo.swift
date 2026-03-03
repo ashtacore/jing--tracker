@@ -49,12 +49,19 @@ struct CalendarViewWithInfo: View {
         modelContext.insert(newEvent)
     }
     
-    func removeEvent() {
-        guard focusDate != nil else { return }
-        let eventToRemove = events.first(where: { $0.date == focusDate!.date })
-        guard eventToRemove != nil else { return }
-        
-        modelContext.delete(eventToRemove!)
+    func removeEvent(type: EventType) {
+        guard let focusDate else { return }
+        let calendar = Calendar.current
+
+        let eventToRemove = events.first { event in
+            event.type == type
+                && calendar.dateComponents([.year, .month, .day], from: event.date)
+                    == calendar.dateComponents([.year, .month, .day], from: focusDate.date ?? .distantPast)
+        }
+
+        if let eventToRemove {
+            modelContext.delete(eventToRemove)
+        }
     }
     
     var body: some View {
@@ -156,7 +163,7 @@ struct CalendarViewWithInfo: View {
                                 .padding(8)
                                 .frame(minWidth: 40)
                             
-                            Button(action: removeEvent) {
+                            Button(action: { removeEvent(type: event) }) {
                                 Label("", systemImage: "minus")
                                     .labelStyle(.iconOnly)
                                     .foregroundStyle(.red)
