@@ -1,0 +1,123 @@
+name: Deploy to App Store
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [closed]
+
+jobs:
+  deploy:
+    name: Archive & Upload to App Store Connect
+    # For pull_request events, only run when the PR was actually merged
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.3.app
+
+      # ── Code Signing Setup ─────────────────────────────────────────────────
+      # Required secrets:
+      #   CERTIFICATE_BASE64          – base64-encoded .p12 distribution certificate
+      #   CERTIFICATE_PASSWORD        – password for the .p12 file
+      #   PROVISIONING_PROFILE_BASE64 – base64-encoded .mobileprovision file
+      #   KEYCHAIN_PASSWORD           – any strong password for the temp keychain
+      - name: Import certificate and provisioning profile
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+          PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          # Create a temporary keychain
+          KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Import the distribution certificate
+          CERT_PATH=$RUNNER_TEMP/certificate.p12
+          echo "$CERTIFICATE_BASE64" | base64 --decode -o "$CERT_PATH"
+          security import "$CERT_PATH" \
+            -k "$KEYCHAIN_PATH" \
+            -P "$CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Make this keychain the default so Xcode finds it
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain
+
+          # Install the provisioning profile
+          PP_PATH="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$PP_PATH"
+          PP_FILE="$RUNNER_TEMP/profile.mobileprovision"
+          echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode -o "$PP_FILE"
+          # Derive the UUID so Xcode can locate it
+          PP_UUID=$(/usr/libexec/PlistBuddy \
+            -c "Print :UUID" \
+            /dev/stdin <<< $(security cms -D -i "$PP_FILE"))
+          cp "$PP_FILE" "$PP_PATH/${PP_UUID}.mobileprovision"
+
+      # ── Archive ────────────────────────────────────────────────────────────
+      - name: Archive
+        run: |
+          xcodebuild archive \
+            -project "Jing Tracker.xcodeproj" \
+            -scheme "Jing Tracker" \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "$RUNNER_TEMP/JingTracker.xcarchive" \
+            | xcpretty && exit ${PIPESTATUS[0]}
+
+      # ── Export & Upload to App Store Connect ──────────────────────────────
+      # Required secrets:
+      #   ASC_API_KEY_ID       – App Store Connect API key ID  (e.g. ABC1234567)
+      #   ASC_API_ISSUER_ID    – Issuer UUID from App Store Connect
+      #   ASC_API_KEY_BASE64   – base64-encoded .p8 private key file
+      - name: Export and upload to App Store Connect
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_KEY_BASE64: ${{ secrets.ASC_API_KEY_BASE64 }}
+        run: |
+          # Write the .p8 key where xcodebuild expects it
+          KEY_DIR="$HOME/.appstoreconnect/private_keys"
+          mkdir -p "$KEY_DIR"
+          KEY_PATH="$KEY_DIR/AuthKey_${ASC_API_KEY_ID}.p8"
+          echo "$ASC_API_KEY_BASE64" | base64 --decode -o "$KEY_PATH"
+
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+            "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store-connect</string>
+            <key>uploadSymbols</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/JingTracker.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -authenticationKeyPath "$KEY_PATH" \
+            -authenticationKeyID "$ASC_API_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_API_ISSUER_ID" \
+            | xcpretty && exit ${PIPESTATUS[0]}
+
+      # ── Cleanup ────────────────────────────────────────────────────────────
+      - name: Clean up keychain
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/build.keychain" || true

@@ -1,0 +1,37 @@
+name: PR Build Test
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    name: Build (Simulator)
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.3.app
+
+      - name: Build for testing
+        run: |
+          xcodebuild build-for-testing \
+            -project "Jing Tracker.xcodeproj" \
+            -scheme "Jing Tracker" \
+            -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty && exit ${PIPESTATUS[0]}
+
+      - name: Run tests
+        run: |
+          xcodebuild test-without-building \
+            -project "Jing Tracker.xcodeproj" \
+            -scheme "Jing Tracker" \
+            -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty && exit ${PIPESTATUS[0]}
